@@ -131,7 +131,7 @@ data "aws_partition" "current" {}
 data "aws_region" "current" {}
 
 data "aws_route53_zone" "this" {
-  count = var.create_route53_record ? 1 : 0
+  count = var.create_route53_record || var.create_route53_aaaa_record ? 1 : 0
 
   name         = var.route53_zone_name
   private_zone = var.route53_private_zone
@@ -233,6 +233,8 @@ module "alb" {
     bucket  = var.alb_log_bucket_name
     prefix  = var.alb_log_location_prefix
   }
+
+  ip_address_type = var.alb_ip_address_type
 
   enable_deletion_protection = var.alb_enable_deletion_protection
 
@@ -406,7 +408,7 @@ module "acm" {
 }
 
 ################################################################################
-# Route53 record
+# Route53 records
 ################################################################################
 resource "aws_route53_record" "atlantis" {
   count = var.create_route53_record ? 1 : 0
@@ -414,6 +416,20 @@ resource "aws_route53_record" "atlantis" {
   zone_id = data.aws_route53_zone.this[0].zone_id
   name    = var.route53_record_name != null ? var.route53_record_name : var.name
   type    = "A"
+
+  alias {
+    name                   = module.alb.lb_dns_name
+    zone_id                = module.alb.lb_zone_id
+    evaluate_target_health = true
+  }
+}
+
+resource "aws_route53_record" "atlantis-AAAA" {
+  count = var.create_route53_aaaa_record ? 1 : 0
+
+  zone_id = data.aws_route53_zone.this[0].zone_id
+  name    = var.route53_record_name != null ? var.route53_record_name : var.name
+  type    = "AAAA"
 
   alias {
     name                   = module.alb.lb_dns_name

@@ -231,7 +231,7 @@ variable "route53_private_zone" {
 }
 
 variable "create_route53_record" {
-  description = "Whether to create Route53 record for Atlantis"
+  description = "Whether to create Route53 A record for Atlantis"
   type        = bool
   default     = true
 }
@@ -693,4 +693,16 @@ variable "efs_additional_security_group_ids" {
   description = "List of additional security groups to allow access to the EFS filesystem"
   type        = list(string)
   default     = []
+}
+
+variable "alb_ip_address_type" {
+  description = "The type of IP addresses used by the subnets for your load balancer"
+  type        = string
+  default     = "ipv4"
+}
+
+variable "create_route53_aaaa_record" {
+  description = "Whether to create Route53 AAAA record for Atlantis"
+  type        = bool
+  default     = false
 }
