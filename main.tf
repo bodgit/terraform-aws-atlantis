@@ -370,6 +370,10 @@ module "atlantis_sg" {
   tags = merge(local.tags, var.atlantis_security_group_tags)
 }
 
+data "aws_vpc" "vpc" {
+  id = local.vpc_id
+}
+
 module "efs_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/nfs"
   version = "v4.8.0"
@@ -379,7 +383,7 @@ module "efs_sg" {
   vpc_id      = local.vpc_id
   description = "Security group allowing access to the EFS storage"
 
-  ingress_cidr_blocks = [var.cidr]
+  ingress_cidr_blocks = [data.aws_vpc.vpc.cidr_block]
   ingress_with_source_security_group_id = [{
     rule                     = "nfs-tcp",
     source_security_group_id = module.atlantis_sg.security_group_id
